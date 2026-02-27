@@ -5,3 +5,6 @@ __pycache__/
 .env
 healthcare.db
 *.db
+cleaned_heart_disease_dataset.csv
+healthcare.db
+.DS_Store

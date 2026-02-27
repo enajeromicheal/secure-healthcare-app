@@ -1,3 +1,9 @@
+import sqlite3
+
+def get_db_connection():
+    conn = sqlite3.connect("healthcare.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -61,12 +67,20 @@ def dashboard():
 
     return render_template("dashboard.html", username=session["username"], role=session["role"])
 
-
 @app.route("/logout")
 def logout():
     session.clear()
     flash("You have been logged out.")
     return redirect(url_for("home"))
+
+
+@app.route("/patients")
+def patients():
+    conn = get_db_connection()
+    patients = conn.execute("SELECT * FROM patient_records LIMIT 50;").fetchall()
+    conn.close()
+    print("Patients fetched:", len(patients))
+    return render_template("patients.html", patients=patients)
 
 
 if __name__ == "__main__":

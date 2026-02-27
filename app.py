@@ -80,11 +80,16 @@ def patients():
         flash("Please log in first.")
         return redirect(url_for("login"))
 
+    if session.get("role") != "admin":
+        flash("Access denied. Admins only.")
+        return redirect(url_for("dashboard"))
+
     conn = get_db_connection()
-    patients = conn.execute("SELECT * FROM patient_records LIMIT 50;").fetchall()
+    patients = conn.execute(
+        "SELECT * FROM patient_records LIMIT 50;"
+    ).fetchall()
     conn.close()
 
-    print("Patients fetched:", len(patients))
     return render_template("patients.html", patients=patients)
 
 if __name__ == "__main__":

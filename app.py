@@ -76,12 +76,16 @@ def logout():
 
 @app.route("/patients")
 def patients():
+    if "username" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
     conn = get_db_connection()
     patients = conn.execute("SELECT * FROM patient_records LIMIT 50;").fetchall()
     conn.close()
+
     print("Patients fetched:", len(patients))
     return render_template("patients.html", patients=patients)
-
 
 if __name__ == "__main__":
     app.run(debug=True)

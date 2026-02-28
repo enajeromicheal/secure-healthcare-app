@@ -8,3 +8,4 @@ healthcare.db
 cleaned_heart_disease_dataset.csv
 healthcare.db
 .DS_Store
+.env

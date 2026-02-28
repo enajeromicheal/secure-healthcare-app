@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Patient Records (Preview)</h2>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>ID</th>
+        <th>Age</th>
+        <th>Sex</th>
+        <th>Blood Pressure</th>
+        <th>Cholesterol</th>
+        <th>FBS >120</th>
+        <th>Resting ECG</th>
+        <th>Exercise Angina</th>
+    </tr>
+
+    {% for p in patients %}
+    <tr>
+        <td>{{ p["patient_id"] }}</td>
+        <td>{{ p["age"] }}</td>
+        <td>{{ p["sex"] }}</td>
+        <td>{{ p["blood_pressure"] }}</td>
+        <td>{{ p["cholesterol_level"] }}</td>
+        <td>{{ p["fasting_blood_sugar_over_120mg_dl"] }}</td>
+        <td>{{ p["resting_ecg"] }}</td>
+        <td>{{ p["exercise_induced_angina"] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

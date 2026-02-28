@@ -3,6 +3,8 @@ import re
 import sqlite3
 from dotenv import load_dotenv
 from flask_talisman import Talisman
+from db.users_mongo import create_user, find_user
+from db.users_mongo import find_user_by_username
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf.csrf import CSRFProtect
@@ -47,36 +49,25 @@ def register():
         if not username or not password:
             flash("Username and password are required.")
             return redirect(url_for("register"))
-        # Password strength check
+
         if len(password) < 8 or not re.search(r"\d", password):
             flash("Password must be at least 8 characters and contain at least one number.")
             return redirect(url_for("register"))
 
-        # IMPORTANT: force PBKDF2 (fixes hashlib.scrypt error)
         password_hash = generate_password_hash(
             password,
             method="pbkdf2:sha256",
             salt_length=16
         )
 
-        conn = get_db_connection()
-        cur = conn.cursor()
+        created = create_user(username=username, password_hash=password_hash, role=role)
 
-        try:
-            cur.execute(
-                "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-                (username, password_hash, role)
-            )
-            conn.commit()
-            flash("Registration successful. Please log in.")
-            return redirect(url_for("login"))
-
-        except sqlite3.IntegrityError:
-            flash("Username already exists.")
+        if not created:
+            flash("Username already exists (or MongoDB error).")
             return redirect(url_for("register"))
 
-        finally:
-            conn.close()
+        flash("Registration successful. Please log in.")
+        return redirect(url_for("login"))
 
     return render_template("register.html")
 @app.route("/login", methods=["GET", "POST"])
@@ -85,19 +76,12 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT username, password_hash, role FROM users WHERE username = ?",
-            (username,)
-        )
-        user = cur.fetchone()
-        conn.close()
+        user = find_user_by_username(username)
 
         if user and check_password_hash(user["password_hash"], password):
             session.clear()
             session["username"] = user["username"]
-            session["role"] = user["role"]
+            session["role"] = user.get("role", "patient")
             flash("Login successful.")
             return redirect(url_for("dashboard"))
 
@@ -105,7 +89,6 @@ def login():
         return redirect(url_for("login"))
 
     return render_template("login.html")
-
 
 @app.route("/dashboard")
 def dashboard():
@@ -120,6 +103,14 @@ def logout():
     session.clear()
     flash("You have been logged out.")
     return redirect(url_for("home"))
+
+from db.mongo import ping_mongo
+
+@app.route("/health/mongo")
+def health_mongo():
+    ok, msg = ping_mongo()
+    status = 200 if ok else 500
+    return {"ok": ok, "message": msg}, status
 
 
 @app.route("/patients")

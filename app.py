@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from dotenv import load_dotenv
 from flask_talisman import Talisman
@@ -12,8 +13,6 @@ def get_db_connection():
     conn = sqlite3.connect("healthcare.db")
     conn.row_factory = sqlite3.Row
     return conn
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
@@ -48,9 +47,17 @@ def register():
         if not username or not password:
             flash("Username and password are required.")
             return redirect(url_for("register"))
+        # Password strength check
+        if len(password) < 8 or not re.search(r"\d", password):
+            flash("Password must be at least 8 characters and contain at least one number.")
+            return redirect(url_for("register"))
 
         # IMPORTANT: force PBKDF2 (fixes hashlib.scrypt error)
-        password_hash = generate_password_hash(password, method="pbkdf2:sha256", salt_length=16)
+        password_hash = generate_password_hash(
+            password,
+            method="pbkdf2:sha256",
+            salt_length=16
+        )
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -72,7 +79,6 @@ def register():
             conn.close()
 
     return render_template("register.html")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

@@ -1,6 +1,12 @@
+import os
 import sqlite3
-from flask_wtf.csrf import CSRFProtect
+from dotenv import load_dotenv
+from flask_talisman import Talisman
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf.csrf import CSRFProtect
+
+load_dotenv()
 
 def get_db_connection():
     conn = sqlite3.connect("healthcare.db")
@@ -10,8 +16,22 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "change-this-to-a-long-random-string"  # we will improve this later
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
+csp = {
+    "default-src": ["'self'"],
+    "style-src": ["'self'"],
+    "img-src": ["'self'"],
+    "script-src": ["'self'"],
+}
 
+Talisman(
+    app,
+    content_security_policy=csp,
+    frame_options="DENY",
+    strict_transport_security=True,
+    strict_transport_security_preload=True,
+    strict_transport_security_include_subdomains=True,
+)
 csrf = CSRFProtect(app)
 @app.route("/")
 def home():

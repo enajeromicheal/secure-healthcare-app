@@ -16,7 +16,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from collections import defaultdict
+import time
 from db.users_mongo import (
     create_user,
     find_user,
@@ -38,6 +39,28 @@ load_dotenv(override=True)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")  # Replace in production
 
+# =========================
+# Simple login rate limiter
+# =========================
+login_attempts = defaultdict(list)
+MAX_LOGIN_ATTEMPTS = 5
+BLOCK_TIME = 300  # seconds
+
+# =========================
+# Session Security Settings
+# =========================
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+# Prevents JavaScript from accessing cookies (protects against XSS)
+
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+# Prevents CSRF attacks from external sites
+
+app.config["SESSION_COOKIE_SECURE"] = False
+# Should be True in HTTPS production. False for local development.
+
+app.config["PERMANENT_SESSION_LIFETIME"] = 900
+# Session expires after 15 minutes of inactivity
 # -------------------------
 # Security headers (Talisman)
 # -------------------------
@@ -56,11 +79,20 @@ Talisman(
     strict_transport_security_include_subdomains=True,
 )
 
-# -------------------------
+# ----------------------------
 # CSRF Protection
-# -------------------------
+# ----------------------------
 csrf = CSRFProtect(app)
 
+# ----------------------------
+# Session Timeout Enforcement
+# ----------------------------
+from datetime import timedelta
+
+@app.before_request
+def make_session_permanent():
+    # Ensures session timeout is enforced
+    session.permanent = True
 # -------------------------
 # SQLite helpers
 # -------------------------
@@ -239,19 +271,36 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # # User login: verifies password and starts session
+    # User login: verifies password and starts session
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
+        # Login rate limiting (brute-force protection)
+        ip = request.remote_addr
+        now = time.time()
+
+        # Remove expired attempts
+        login_attempts[ip] = [t for t in login_attempts[ip] if now - t < BLOCK_TIME]
+
+        if len(login_attempts[ip]) >= MAX_LOGIN_ATTEMPTS:
+            flash("Too many login attempts. Try again later.", "error")
+            return redirect(url_for("login"))
+
         user = find_user(username)
 
         if user and check_password_hash(user["password_hash"], password):
+            # Security: regenerate session identifier after successful login
             session.clear()
             session["username"] = user["username"]
             session["role"] = user.get("role", "patient")
+            session.permanent = True
+
             flash("Login successful.", "success")
             return redirect(url_for("dashboard"))
+
+        # Record failed login attempt
+        login_attempts[ip].append(now)
 
         flash("Invalid login details.", "error")
         return redirect(url_for("login"))
@@ -261,7 +310,7 @@ def login():
 
 @app.route("/logout")
 def logout():
-    # # Clears session and logs user out
+    # Clears session and logs user out
     session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for("home"))
@@ -753,6 +802,132 @@ def appointments():
     conn.close()
 
     return render_template("appointments.html", appointments=rows, q=q)
+
+@app.route("/patients/<username>/edit", methods=["GET", "POST"])
+def edit_patient_record(username):
+    # Admin/clinician: update patient medical record
+    gate = require_login()
+    if gate:
+        return gate
+
+    gate = require_admin_or_clinician()
+    if gate:
+        return gate
+
+    conn = get_db_connection()
+
+    if request.method == "POST":
+        age = request.form.get("age", "").strip()
+        sex = request.form.get("sex", "").strip()
+        blood_pressure = request.form.get("blood_pressure", "").strip()
+        cholesterol_level = request.form.get("cholesterol_level", "").strip()
+        fasting = request.form.get("fasting_blood_sugar_over_120mg_dl", "").strip()
+        resting_ecg = request.form.get("resting_ecg", "").strip()
+        angina = request.form.get("exercise_induced_angina", "").strip()
+
+        if not age or not sex or not blood_pressure or not cholesterol_level or not fasting or not resting_ecg or not angina:
+            conn.close()
+            flash("All fields are required.", "error")
+            return redirect(url_for("edit_patient_record", username=username))
+
+        try:
+            age = int(age)
+            blood_pressure = int(blood_pressure)
+            cholesterol_level = int(cholesterol_level)
+        except ValueError:
+            conn.close()
+            flash("Age, blood pressure, and cholesterol must be numbers.", "error")
+            return redirect(url_for("edit_patient_record", username=username))
+
+        conn.execute("""
+            UPDATE patient_records
+            SET age = ?, sex = ?, blood_pressure = ?, cholesterol_level = ?,
+                fasting_blood_sugar_over_120mg_dl = ?, resting_ecg = ?, exercise_induced_angina = ?
+            WHERE username = ?;
+        """, (
+            age,
+            sex,
+            blood_pressure,
+            cholesterol_level,
+            fasting,
+            resting_ecg,
+            angina,
+            username
+        ))
+        conn.commit()
+        conn.close()
+
+        flash("Patient record updated successfully.", "success")
+        return redirect(url_for("patients"))
+
+    record = conn.execute("""
+        SELECT * FROM patient_records
+        WHERE username = ?
+        LIMIT 1;
+    """, (username,)).fetchone()
+    conn.close()
+
+    if record is None:
+        flash("Patient record not found.", "error")
+        return redirect(url_for("patients"))
+
+    return render_template("edit_patient_record.html", record=record)
+
+@app.route("/patients/<username>/delete", methods=["GET", "POST"])
+def delete_patient_record(username):
+    # Admin-only: permanently delete patient record and user
+    gate = require_login()
+    if gate:
+        return gate
+
+    gate = require_admin()
+    if gate:
+        return gate
+
+    conn = get_db_connection()
+    record = conn.execute("""
+        SELECT * FROM patient_records
+        WHERE username = ?
+        LIMIT 1;
+    """, (username,)).fetchone()
+
+    if record is None:
+        conn.close()
+        flash("Patient record not found.", "error")
+        return redirect(url_for("patients"))
+
+    if request.method == "POST":
+        conn.execute("DELETE FROM patient_records WHERE username = ?;", (username,))
+        conn.commit()
+        conn.close()
+
+        delete_user(username)
+
+        flash("Patient record deleted successfully.", "success")
+        return redirect(url_for("patients"))
+
+    conn.close()
+    return render_template("delete_patient_record.html", record=record)
+
+@app.route("/patients/<username>/deactivate", methods=["POST"])
+def deactivate_patient_user(username):
+    # Admin-only: deactivate patient account without deleting record
+    gate = require_login()
+    if gate:
+        return gate
+
+    gate = require_admin()
+    if gate:
+        return gate
+
+    ok = deactivate_user(username)
+
+    if ok:
+        flash("Patient account deactivated successfully.", "success")
+    else:
+        flash("Failed to deactivate patient account.", "error")
+
+    return redirect(url_for("patients"))
 # -------------------------
 # Dev server entry-point
 # -------------------------

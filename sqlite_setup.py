@@ -1,58 +1,64 @@
+# sqlite_setup.py
+# - Initialises SQLite dataset table
+# - Loads cleaned heart-disease dataset from CSV
+# - Imports dataset into SQLite
+# - Uses a separate table to avoid overwriting patient_records used by the app
+
+import os
 import sqlite3
 import pandas as pd
 
-DB_NAME = "healthcare.db"
+# Database configuration (can be overridden via environment variable)
+DB_NAME = os.environ.get("SQLITE_DB_PATH", "healthcare.db")
 CSV_FILE = "cleaned_heart_disease_dataset.csv"
+
+# Dataset table name (separate from patient_records)
+DATASET_TABLE = "heart_dataset"
 
 
 def main():
-    # Load dataset
+    # ------------------------
+    # Load dataset from CSV
+    # ------------------------
     df = pd.read_csv(CSV_FILE)
 
-    # Connect to (or create) SQLite database
+    if df.empty:
+        raise RuntimeError("Dataset CSV is empty or failed to load.")
+
+    # ------------------------
+    # Connect to SQLite database
+    # ------------------------
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    # -------------------------
-    # USERS TABLE
-    # -------------------------
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
+    # ------------------------
+    # Import dataset into SQLite
+    # ------------------------
+    # NOTE: Uses a separate table to avoid modifying patient_records
+    df.to_sql(DATASET_TABLE, conn, if_exists="replace", index=False)
+
+    # ------------------------
+    # Verification
+    # ------------------------
+    cur.execute(f"SELECT COUNT(*) FROM {DATASET_TABLE};")
+    print("Rows in heart_dataset:", cur.fetchone()[0])
+
+    # ========================
+    # Audit Log Table
+    # ========================
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS audit_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'patient',
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+        username TEXT,
+        action TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
     """)
-
-    # -------------------------
-    # PATIENT RECORDS TABLE
-    # -------------------------
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS patient_records (
-        patient_id INTEGER PRIMARY KEY,
-        age INTEGER NOT NULL,
-        sex TEXT NOT NULL,
-        blood_pressure INTEGER NOT NULL,
-        cholesterol_level INTEGER NOT NULL,
-        fasting_blood_sugar_over_120mg_dl TEXT NOT NULL,
-        resting_ecg TEXT NOT NULL,
-        exercise_induced_angina TEXT NOT NULL
-    );
-    """)
-
-    # Import CSV into patient_records
-    df.to_sql("patient_records", conn, if_exists="replace", index=False)
-
-    # Quick check
-    cur.execute("SELECT COUNT(*) FROM patient_records;")
-    print("Rows in patient_records:", cur.fetchone()[0])
 
     conn.commit()
     conn.close()
 
-    print("✅ SQLite database created successfully.")
+    print("✓ Dataset imported successfully.")
 
 
 if __name__ == "__main__":

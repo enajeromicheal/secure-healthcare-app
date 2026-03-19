@@ -1,0 +1,162 @@
+/* app.css — main UI styling
+   - Dark modern theme with blue-to-deep gradient background
+   - Consistent cards, forms, buttons, alerts, and tables
+*/
+
+:root{
+  --bg:#0b1220;            /* deep base */
+  --panel:#111a2e;
+  --card:#0f1930;
+  --text:#e7ecff;
+  --muted:#a9b4d6;
+  --border:rgba(255,255,255,.10);
+  --accent:#6ea8fe;        /* current accent blue */
+  --accent-bright:#8fc5ff; /* brighter blue for background glow */
+  --ok:#2dd4bf;
+  --warn:#fbbf24;
+  --bad:#fb7185;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color:var(--text);
+
+  /* Brighter blue flow into the dark base:
+     - First layer = bright blue glow (top-left)
+     - Second layer = softer blue wash (top-centre)
+     - Third layer = teal highlight (right)
+     - Then the deep base colour
+  */
+  background:
+    radial-gradient(900px 650px at 18% 8%, rgba(143,197,255,.38), transparent 60%),
+    radial-gradient(1100px 780px at 45% 0%, rgba(110,168,254,.22), transparent 62%),
+    radial-gradient(1000px 700px at 80% 30%, rgba(45,212,191,.12), transparent 60%),
+    var(--bg);
+}
+
+a{color:var(--text); text-decoration:none}
+a:hover{opacity:.9}
+
+.container{width:min(980px, 92%); margin:0 auto; padding:24px 0}
+.stack{display:grid; gap:12px}
+
+/* Top navigation bar */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(11,18,32,.65);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar__inner{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:14px 0
+}
+.brand{font-weight:700; letter-spacing:.2px}
+
+.nav{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.nav a{padding:8px 10px; border-radius:10px}
+.nav a:hover{background:rgba(255,255,255,.06)}
+
+/* Cards */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+}
+
+/* Typography */
+h1{font-size:34px; margin:16px 0 10px}
+h2{font-size:20px; margin:0 0 12px}
+p{color:var(--muted); margin:0 0 10px; line-height:1.55}
+.muted{color:var(--muted)}
+
+/* Forms */
+.form{display:grid; gap:12px; margin-top:10px}
+.label{font-size:13px; color:var(--muted)}
+
+.input, select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  background: rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  color:var(--text);
+  outline:none;
+}
+
+.input:focus, select:focus{
+  border-color:rgba(110,168,254,.55);
+  box-shadow: 0 0 0 3px rgba(110,168,254,.15)
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid rgba(110,168,254,.35);
+  background: rgba(110,168,254,.18);
+  color:var(--text);
+  font-weight:600;
+  cursor:pointer;
+}
+.btn:hover{background: rgba(110,168,254,.24)}
+.btn--ghost{background: transparent}
+
+/* Layout helpers used by templates */
+.actions{display:flex; gap:10px; flex-wrap:wrap}
+.alerts{display:grid; gap:10px; margin:12px 0 16px}
+.table-wrapper{overflow:auto; border-radius:14px}
+
+/* Utility spacing (replaces inline styles for CSP compliance) */
+.mt-10{ margin-top:10px; }
+.mt-14{ margin-top:14px; }
+.mt-16{ margin-top:16px; }
+
+/* Alerts */
+.alert{
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:10px 12px;
+  background: rgba(255,255,255,.05);
+}
+.alert--success{border-color: rgba(45,212,191,.35)}
+.alert--warning{border-color: rgba(251,191,36,.35)}
+.alert--error{border-color: rgba(251,113,133,.40)}
+.alert--info{border-color: rgba(110,168,254,.35)}
+
+/* Tables */
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+.table th, .table td{
+  padding:12px 12px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  white-space:nowrap;
+}
+.table th{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:600;
+  background: rgba(255,255,255,.04)
+}
+.table tr:last-child td{border-bottom:none}
+
+/* Footer (if used later) */
+.footer{border-top:1px solid var(--border); margin-top:22px}
+.footer__inner{
+  display:flex; justify-content:space-between;
+  gap:10px; padding:18px 0;
+  color:var(--muted)
+}

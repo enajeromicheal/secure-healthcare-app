@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h1>Edit Patient Record</h1>
+    <p>Update the medical record for this patient.</p>
+
+    <form class="form mt-14" method="post" action="{{ url_for('edit_patient_record', patient_id=record['patient_id']) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <div class="label">Username</div>
+            <input class="input" value="{{ record['username'] or ('patient_' ~ record['patient_id']) }}" disabled />
+        </div>
+
+        <div>
+            <div class="label">Patient ID</div>
+            <input class="input" value="{{ record['patient_id'] }}" disabled />
+        </div>
+
+        <div>
+            <div class="label">Age</div>
+            <input class="input" name="age" value="{{ record['age'] }}" required />
+        </div>
+
+        <div>
+            <div class="label">Sex</div>
+            <select class="input" name="sex" required>
+                <option value="Male" {% if record['sex'] == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if record['sex'] == 'Female' %}selected{% endif %}>Female</option>
+                <option value="M" {% if record['sex'] == 'M' %}selected{% endif %}>M</option>
+                <option value="F" {% if record['sex'] == 'F' %}selected{% endif %}>F</option>
+            </select>
+        </div>
+
+        <div>
+            <div class="label">Blood Pressure</div>
+            <input class="input" name="blood_pressure" value="{{ record['blood_pressure'] }}" required />
+        </div>
+
+        <div>
+            <div class="label">Cholesterol Level</div>
+            <input class="input" name="cholesterol_level" value="{{ record['cholesterol_level'] }}" required />
+        </div>
+
+        <div>
+            <div class="label">Fasting Blood Sugar Over 120mg/dl</div>
+            <select class="input" name="fasting_blood_sugar_over_120mg_dl" required>
+                <option value="Yes" {% if record['fasting_blood_sugar_over_120mg_dl'] == 'Yes' %}selected{% endif %}>Yes</option>
+                <option value="No" {% if record['fasting_blood_sugar_over_120mg_dl'] == 'No' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div>
+            <div class="label">Resting ECG</div>
+            <input class="input" name="resting_ecg" value="{{ record['resting_ecg'] }}" required />
+        </div>
+
+        <div>
+            <div class="label">Exercise Induced Angina</div>
+            <select class="input" name="exercise_induced_angina" required>
+                <option value="Yes" {% if record['exercise_induced_angina'] == 'Yes' %}selected{% endif %}>Yes</option>
+                <option value="No" {% if record['exercise_induced_angina'] == 'No' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="actions mt-14">
+            <button class="btn" type="submit">Update Record</button>
+            <a class="btn btn--ghost" href="{{ url_for('patients') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

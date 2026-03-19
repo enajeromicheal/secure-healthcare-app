@@ -1,35 +1,74 @@
+<!-- base.html — master layout
+     - Role-aware navigation (patient vs admin)
+     - Flash messages (categorised)
+     - Shared CSS (app.css)
+-->
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Secure Healthcare App</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title or "Secure Healthcare App" }}</title>
 
-  <!-- TEMP: force visibility even if CSS exists somewhere -->
-  <style>
-    * { color: #000 !important; background: #fff !important; }
-    a { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
-  <div style="padding:12px; border-bottom:1px solid #ccc;">
-    <a href="/">Home</a> |
-    <a href="/register">Register</a> |
-    <a href="/login">Login</a>
-  </div>
 
-  <div style="padding:16px;">
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand" href="{{ url_for('home') }}">Secure Healthcare App</a>
+
+    <nav class="nav">
+      <a href="{{ url_for('home') }}">Home</a>
+
+      {% if session.get("username") %}
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+
+        
+        {% if session.get("role") == "patient" %}
+         <a href="{{ url_for('my_record') }}">My Record</a>
+         <a href="{{ url_for('my_appointments') }}">My Appointments</a>
+         <a href="{{ url_for('book_appointment') }}">Book Appointment</a>
+         <a href="{{ url_for('my_prescriptions') }}">My Prescriptions</a>
+         <a href="{{ url_for('change_password') }}">Change Password</a>
+        {% endif %}
+
+        {% if session.get("role") == "admin" %}
+          <a href="{{ url_for('patients') }}">Patients</a>
+          <!-- IMPORTANT: endpoint is admin_create_patient (spelled fully) -->
+          <a href="{{ url_for('admin_create_patient') }}">Create Patient</a>
+          <a href="{{ url_for('admin_reset_password') }}">Reset Password</a>
+        {% endif %}
+
+        {% if session.get("role") == "clinician" %}
+          <a href="{{ url_for('patients') }}">Patients</a>
+          <a href="{{ url_for('appointments') }}">Appointments</a>
+          <a href="{{ url_for('prescriptions') }}">Prescriptions</a>
+          <a href="{{ url_for('create_prescription') }}">Create Prescription</a>
+        {% endif %}
+
+        <a class="btn btn--ghost" href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
       {% endif %}
-    {% endwith %}
-
-    {% block content %}{% endblock %}
+    </nav>
   </div>
+</header>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alerts">
+        {% for category, message in messages %}
+          <div class="alert alert--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
 </body>
 </html>

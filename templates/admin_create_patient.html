@@ -1,0 +1,78 @@
+<!-- admin_create_patient.html — admin-only workflow
+     - Creates a patient user account (auto-username + temp password)
+     - Collects clinical fields to insert into SQLite patient_records
+-->
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="card">
+    <h1>Create Patient (Admin)</h1>
+    <p>Create a patient account and enter their record details (one record per patient).</p>
+
+    <form class="form" method="post" action="{{ url_for('admin_create_patient') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <div class="label">Patient Full Name</div>
+        <input class="input" name="patient_name" required />
+        <p class="muted" style="margin-top:8px;">
+          Username will be auto-generated as <em>name + unique suffix</em>.
+        </p>
+      </div>
+
+      <div>
+        <div class="label">Patient ID (unique number)</div>
+        <input class="input" name="patient_id" inputmode="numeric" required />
+      </div>
+
+      <div>
+        <div class="label">Age</div>
+        <input class="input" name="age" inputmode="numeric" required />
+      </div>
+
+      <div>
+        <div class="label">Sex</div>
+        <select class="input" name="sex" required>
+          <option value="" selected disabled>Select…</option>
+          <option value="M">M</option>
+          <option value="F">F</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="label">Blood Pressure</div>
+        <input class="input" name="blood_pressure" inputmode="numeric" required />
+      </div>
+
+      <div>
+        <div class="label">Cholesterol Level</div>
+        <input class="input" name="cholesterol_level" inputmode="numeric" required />
+      </div>
+
+      <div>
+        <div class="label">Fasting Blood Sugar Over 120mg/dl</div>
+        <select class="input" name="fasting_blood_sugar_over_120mg_dl" required>
+          <option value="" selected disabled>Select…</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="label">Resting ECG</div>
+        <input class="input" name="resting_ecg" placeholder="e.g., normal" required />
+      </div>
+
+      <div>
+        <div class="label">Exercise Induced Angina</div>
+        <select class="input" name="exercise_induced_angina" required>
+          <option value="" selected disabled>Select…</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <button class="btn" type="submit">Create Patient Account</button>
+    </form>
+  </div>
+{% endblock %}

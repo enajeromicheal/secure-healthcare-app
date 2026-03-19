@@ -1,0 +1,21 @@
+<!-- my_record.html — patient-only personal record view -->
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="card">
+    <h1>My Record</h1>
+    <p>This page shows only the record linked to your account.</p>
+
+    <div class="card mt-14">
+      <p><strong>Username:</strong> {{ record["username"] }}</p>
+      <p><strong>Patient ID:</strong> {{ record["patient_id"] }}</p>
+      <p><strong>Age:</strong> {{ record["age"] }}</p>
+      <p><strong>Sex:</strong> {{ record["sex"] }}</p>
+      <p><strong>Blood Pressure:</strong> {{ record["blood_pressure"] }}</p>
+      <p><strong>Cholesterol Level:</strong> {{ record["cholesterol_level"] }}</p>
+      <p><strong>Fasting Blood Sugar &gt; 120mg/dl:</strong> {{ record["fasting_blood_sugar_over_120mg_dl"] }}</p>
+      <p><strong>Resting ECG:</strong> {{ record["resting_ecg"] }}</p>
+      <p><strong>Exercise Induced Angina:</strong> {{ record["exercise_induced_angina"] }}</p>
+    </div>
+  </div>
+{% endblock %}

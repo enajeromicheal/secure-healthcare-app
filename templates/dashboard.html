@@ -1,6 +1,24 @@
+<!-- dashboard.html — authenticated user landing page
+     - Displays the logged-in username and role
+     - Shows admin-only navigation to patient records
+-->
 {% extends "base.html" %}
+
 {% block content %}
-<h2>Dashboard</h2>
-<p>Logged in as: <strong>{{ username }}</strong></p>
-<p>Role: <strong>{{ role }}</strong></p>
+  <div class="card">
+    <h1>Dashboard</h1>
+
+    <!-- Personalised greeting -->
+    <p>Welcome, <strong>{{ username }}</strong>.</p>
+
+    <!-- Role displayed for transparency -->
+    <p class="muted">Role: <strong>{{ role }}</strong></p>
+
+    <!-- Admin-only call-to-action -->
+    {% if role == "admin" %}
+      <div class="actions mt-14">
+        <a class="btn" href="{{ url_for('patients') }}">View patient records</a>
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}

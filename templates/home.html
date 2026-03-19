@@ -1,5 +1,19 @@
+<!-- home.html — public landing page
+     - Extends base layout
+     - Provides welcome message
+     - Includes clear call-to-action buttons
+-->
 {% extends "base.html" %}
+
 {% block content %}
-<h1>Secure Healthcare Record System</h1>
-<p>Welcome. Please register or log in.</p>
+  <div class="card">
+    <h1>Secure Healthcare Record System</h1>
+    <p>Welcome. Please register or log in to continue.</p>
+
+    <!-- Call-to-action buttons -->
+    <div class="actions">
+      <a class="btn" href="{{ url_for('register') }}">Create Account</a>
+      <a class="btn btn--ghost" href="{{ url_for('login') }}">Login</a>
+    </div>
+  </div>
 {% endblock %}

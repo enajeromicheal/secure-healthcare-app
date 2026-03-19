@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>My Prescriptions</h1>
+  <p>Prescriptions issued for your account.</p>
+
+  <div class="table-wrapper mt-16">
+    <table class="table" aria-label="My prescriptions">
+      <thead>
+        <tr>
+          <th>Medication</th>
+          <th>Dosage</th>
+          <th>Instructions</th>
+          <th>Clinician</th>
+          <th>Issue Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if not prescriptions %}
+          <tr><td colspan="6">No prescriptions found.</td></tr>
+        {% endif %}
+        {% for p in prescriptions %}
+          <tr>
+            <td>{{ p["medication_name"] }}</td>
+            <td>{{ p["dosage"] }}</td>
+            <td>{{ p["instructions"] }}</td>
+            <td>{{ p["clinician_username"] }}</td>
+            <td>{{ p["issue_date"] }}</td>
+            <td>{{ p["status"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

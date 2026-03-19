@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>My Appointments</h1>
+  <p>Appointments linked to your account.</p>
+
+  <div class="table-wrapper mt-16">
+    <table class="table" aria-label="My appointments">
+      <thead>
+        <tr>
+          <th>Date/Time</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if not appointments %}
+          <tr><td colspan="4">No appointments found.</td></tr>
+        {% endif %}
+        {% for a in appointments %}
+          <tr>
+            <td>{{ a["appointment_datetime"] }}</td>
+            <td>{{ a["reason"] }}</td>
+            <td>{{ a["status"] }}</td>
+            <td>{{ a["created_at"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

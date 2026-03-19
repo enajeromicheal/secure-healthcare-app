@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Appointments</h1>
+  <p>Admin/clinician view.</p>
+
+  <form class="form mt-14" method="get" action="{{ url_for('appointments') }}">
+    <div>
+      <div class="label">Search (patient, clinician, status, reason)</div>
+      <input class="input" name="q" value="{{ q or '' }}" placeholder="e.g. booked" />
+    </div>
+    <div class="actions mt-10">
+      <button class="btn" type="submit">Search</button>
+      <a class="btn btn--ghost" href="{{ url_for('appointments') }}">Clear</a>
+    </div>
+  </form>
+
+  <div class="table-wrapper mt-16">
+    <table class="table" aria-label="Appointments">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patient</th>
+          <th>Clinician</th>
+          <th>Date/Time</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if not appointments %}
+          <tr><td colspan="7">No appointments found.</td></tr>
+        {% endif %}
+        {% for a in appointments %}
+          <tr>
+            <td>{{ a["id"] }}</td>
+            <td>{{ a["patient_username"] }}</td>
+            <td>{{ a["clinician_username"] or "-" }}</td>
+            <td>{{ a["appointment_datetime"] }}</td>
+            <td>{{ a["reason"] }}</td>
+            <td>{{ a["status"] }}</td>
+            <td>{{ a["created_at"] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

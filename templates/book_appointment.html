@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Book Appointment</h1>
+  <p>Choose a date/time and provide a brief reason.</p>
+
+  <form class="form" method="post" action="{{ url_for('book_appointment') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div>
+      <div class="label">Appointment Date/Time</div>
+      <input class="input" name="appointment_datetime" placeholder="e.g. 2026-03-10 14:30" required />
+      <p class="muted">Tip: Use format YYYY-MM-DD HH:MM</p>
+    </div>
+
+    <div>
+      <div class="label">Reason</div>
+      <input class="input" name="reason" placeholder="e.g. follow-up consultation" required />
+    </div>
+
+    <button class="btn" type="submit">Book</button>
+  </form>
+</div>
+{% endblock %}

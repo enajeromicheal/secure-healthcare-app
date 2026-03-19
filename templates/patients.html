@@ -1,32 +1,102 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Patient Records (Preview)</h2>
+<div class="card">
+    <h1>Patient Records</h1>
+    <p>Admin/clinician view. Use search to find records.</p>
 
-<table border="1" cellpadding="6">
-    <tr>
-        <th>ID</th>
-        <th>Age</th>
-        <th>Sex</th>
-        <th>Blood Pressure</th>
-        <th>Cholesterol</th>
-        <th>FBS >120</th>
-        <th>Resting ECG</th>
-        <th>Exercise Angina</th>
-    </tr>
+    <form class="form mt-14" method="get" action="{{ url_for('patients') }}">
+        <div>
+            <div class="label">Search (username, patient ID, age, sex)</div>
+            <input
+                class="input"
+                name="q"
+                value="{{ q or '' }}"
+                placeholder="e.g. donald or 1001"
+            />
+        </div>
 
-    {% for p in patients %}
-    <tr>
-        <td>{{ p["patient_id"] }}</td>
-        <td>{{ p["age"] }}</td>
-        <td>{{ p["sex"] }}</td>
-        <td>{{ p["blood_pressure"] }}</td>
-        <td>{{ p["cholesterol_level"] }}</td>
-        <td>{{ p["fasting_blood_sugar_over_120mg_dl"] }}</td>
-        <td>{{ p["resting_ecg"] }}</td>
-        <td>{{ p["exercise_induced_angina"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
+        <div class="actions mt-10">
+            <button class="btn" type="submit">Search</button>
+            <a class="btn btn--ghost" href="{{ url_for('patients') }}">Clear</a>
+        </div>
+    </form>
+
+    <div class="table-wrapper mt-16">
+        <table class="table" aria-label="Patient records">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>ID</th>
+                    <th>Age</th>
+                    <th>Sex</th>
+                    <th>BP</th>
+                    <th>Chol</th>
+                    <th>FBS &gt; 120</th>
+                    <th>ECG</th>
+                    <th>Angina</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in patients %}
+                <tr>
+                    <td>{{ p["username"] or ("patient_" ~ p["patient_id"]) }}</td>
+                    <td>{{ p["patient_id"] }}</td>
+                    <td>{{ p["age"] }}</td>
+                    <td>{{ p["sex"] }}</td>
+                    <td>{{ p["blood_pressure"] }}</td>
+                    <td>{{ p["cholesterol_level"] }}</td>
+                    <td>{{ p["fasting_blood_sugar_over_120mg_dl"] }}</td>
+                    <td>{{ p["resting_ecg"] }}</td>
+                    <td>{{ p["exercise_induced_angina"] }}</td>
+
+                    <td>
+                        <div class="actions">
+                            <a
+                                class="btn btn--ghost"
+                                href="{{ url_for('edit_patient_record', patient_id=p['patient_id']) }}"
+                            >
+                                Edit
+                            </a>
+
+                            {% if session.get("role") == "admin" %}
+
+                                {% if p["username"] %}
+                                <form
+                                    method="post"
+                                    action="{{ url_for('deactivate_patient_user', username=p['username']) }}"
+                                >
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn--ghost" type="submit">
+                                        Deactivate
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span
+                                    class="btn btn--ghost"
+                                    style="pointer-events: none; opacity: 0.6;"
+                                >
+                                    Deactivate
+                                </span>
+                                {% endif %}
+
+                                <a
+                                    class="btn btn--ghost"
+                                    href="{{ url_for('delete_patient_record', patient_id=p['patient_id']) }}"
+                                >
+                                    Delete
+                                </a>
+
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

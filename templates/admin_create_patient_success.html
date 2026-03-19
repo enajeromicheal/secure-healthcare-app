@@ -1,0 +1,20 @@
+<!-- admin_create_patient_success.html — shows credentials once -->
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="card">
+    <h1>Patient Created</h1>
+    <p>These credentials are shown once. Share them securely with the patient.</p>
+
+    <div class="card mt-14">
+      <p><strong>Username:</strong> {{ created_username }}</p>
+      <p><strong>Temporary Password:</strong> {{ temp_password }}</p>
+      <p class="muted">Patient should log in and change their password immediately.</p>
+    </div>
+
+    <div class="actions mt-14">
+      <a class="btn" href="{{ url_for('patients') }}">Back to Patients</a>
+      <a class="btn btn--ghost" href="{{ url_for('admin_create_patient') }}">Create Another</a>
+    </div>
+  </div>
+{% endblock %}

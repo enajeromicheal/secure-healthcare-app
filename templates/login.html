@@ -1,20 +1,31 @@
+<!-- login.html — login page (CSRF protected) -->
 {% extends "base.html" %}
+
 {% block content %}
-  <h1>Login</h1>
+  <div class="card">
+    <h1>Login</h1>
+    <p>Sign in to access your dashboard.</p>
 
-  <form method="POST" action="{{ url_for('login') }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <form class="form" method="post" action="{{ url_for('login') }}">
+      <!-- CSRF token required by CSRFProtect -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <p>
-      <label>Username</label><br>
-      <input type="text" name="username" required>
+      <div>
+        <div class="label">Username</div>
+        <input class="input" name="username" autocomplete="username" required />
+      </div>
+
+      <div>
+        <div class="label">Password</div>
+        <input class="input" type="password" name="password" autocomplete="current-password" required />
+      </div>
+
+      <button class="btn" type="submit">Login</button>
+    </form>
+
+    <p class="muted mt-16">
+      Don’t have an account?
+      <a href="{{ url_for('register') }}">Create one here</a>.
     </p>
-
-    <p>
-      <label>Password</label><br>
-      <input type="password" name="password" required>
-    </p>
-
-    <button type="submit">Login</button>
-  </form>
+  </div>
 {% endblock %}

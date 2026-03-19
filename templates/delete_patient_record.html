@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h1>Delete Patient Record</h1>
+    <p>This action will permanently remove the patient record and any linked user account.</p>
+
+    <div class="card mt-14">
+        <p><strong>Username:</strong> {{ record["username"] or ("patient_" ~ record["patient_id"]) }}</p>
+        <p><strong>Patient ID:</strong> {{ record["patient_id"] }}</p>
+        <p><strong>Age:</strong> {{ record["age"] }}</p>
+        <p><strong>Sex:</strong> {{ record["sex"] }}</p>
+    </div>
+
+    <form class="form mt-14" method="post" action="{{ url_for('delete_patient_record', patient_id=record['patient_id']) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="actions">
+            <button class="btn" type="submit">Yes, Delete</button>
+            <a class="btn btn--ghost" href="{{ url_for('patients') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

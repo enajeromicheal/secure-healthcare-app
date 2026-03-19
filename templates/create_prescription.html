@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Create Prescription</h1>
+  <p>Create a prescription for a patient (by username).</p>
+
+  <form class="form" method="post" action="{{ url_for('create_prescription') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div>
+      <div class="label">Patient Username</div>
+      <input class="input" name="patient_username" placeholder="e.g. fatima-1234" required />
+    </div>
+
+    <div>
+      <div class="label">Medication Name</div>
+      <input class="input" name="medication_name" placeholder="e.g. Paracetamol" required />
+    </div>
+
+    <div>
+      <div class="label">Dosage</div>
+      <input class="input" name="dosage" placeholder="e.g. 500mg twice daily" required />
+    </div>
+
+    <div>
+      <div class="label">Instructions</div>
+      <input class="input" name="instructions" placeholder="e.g. Take after meals" required />
+    </div>
+
+    <button class="btn" type="submit">Create</button>
+  </form>
+</div>
+{% endblock %}

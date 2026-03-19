@@ -30,7 +30,66 @@ A secure web application demonstrating authentication, role-based access control
 - CSRF protection for forms
 - Secure HTTP headers via Flask-Talisman (CSP, HSTS, X-Frame-Options)
 - SECRET_KEY stored in environment variable (not hard-coded)
+## Security Design Documents
 
+- STRIDE Threat Model → docs/threat_model_stride.md  
+- Security Evaluation → docs/evaluation_and_residual_risk.md  
+- Deployment Guide → docs/deployment.md  
+
+### Trust Boundary Diagram
+
+![Trust Boundary](docs/trust_boundary_diagram.png)
+## How to Run the System
+
+1. Clone the project
+
+git clone <your-github-link>
+
+cd HelloWorldPersonalGithub
+
+
+2. Create virtual environment
+
+python3 -m venv .venv  
+source .venv/bin/activate
+
+
+3. Install dependencies
+
+pip install -r requirements.txt
+
+
+4. Create `.env` file
+
+Add:
+
+SECRET_KEY=your_secret_key  
+MONGO_URI=mongodb://localhost:27017/healthcare
+
+
+5. Setup SQLite database
+
+python sqlite_setup.py
+
+
+6. Seed users
+
+python scripts/seed_users.py
+
+
+7. Run application
+
+python app.py
+
+Open browser:
+
+http://127.0.0.1:5000
+
+## Running Tests
+
+Run authentication and RBAC tests:
+
+python -m unittest discover tests -v
 ---
 ## System Screenshots
 
@@ -71,7 +130,7 @@ A secure web application demonstrating authentication, role-based access control
 ├── static/
 ├── docs/
 │   ├── threat_model_stride.md
-│   ├── trust_boundary_diagram.md
+│   ├── trust_boundary_diagram.png
 │   └── evaluation_and_residual_risk.md
 ├── sqlite_setup.py
 ├── requirements.txt

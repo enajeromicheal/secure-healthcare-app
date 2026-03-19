@@ -1,6 +1,11 @@
 import os
+import sys
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(override=True)
+
 from db.users_mongo import create_user, ensure_user_indexes
 
 load_dotenv(override=True)

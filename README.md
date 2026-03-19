@@ -32,7 +32,34 @@ A secure web application demonstrating authentication, role-based access control
 - SECRET_KEY stored in environment variable (not hard-coded)
 
 ---
+## System Screenshots
 
+### Home Page
+![Home Page](docs/screenshots/home_page.png)
+
+### Login Page
+![Login Page](docs/screenshots/login_page.png)
+
+### Register Page
+![Register Page](docs/screenshots/register_page.png)
+
+### Dashboard After Login
+![Dashboard](docs/screenshots/patients_login_dashboard.png)
+
+### Admin Patients Page
+![Admin Patients](docs/screenshots/admin_login.png)
+
+### Access Denied Page (RBAC Protection)
+![Access Denied](docs/screenshots/access_denied.png)
+
+### MongoDB Users Collection
+![MongoDB](docs/screenshots/mongodb_users.png)
+
+### SQLite Patient Records Table
+![SQLite](docs/screenshots/sqlite_patient_table.png)
+
+### Terminal Tests Passing
+![Tests](docs/screenshots/terminal_tests.png)
 ## Project Structure
 ```text
 .

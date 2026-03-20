@@ -11,6 +11,9 @@ import sqlite3
 import secrets
 import string
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "healthcare.db")
+
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_talisman import Talisman
@@ -105,7 +108,7 @@ def make_session_permanent():
 # -------------------------
 def get_db_connection():
     # # Connects to SQLite patient database (path can be overridden via env)
-    db_path = os.environ.get("SQLITE_DB_PATH", "healthcare.db")
+    db_path = os.environ.get("SQLITE_DB_PATH", DEFAULT_SQLITE_PATH)
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
@@ -277,7 +280,7 @@ def register():
         )
 
         # Force patient role (prevents privilege escalation)
-        ok, reason = create_user(username, password_hash, role="patient")
+        ok, reason = create_user(username, password_hash, role="patient", must_change_password=True)
 
         if not ok:
             if reason == "duplicate":

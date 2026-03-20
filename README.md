@@ -11,6 +11,10 @@ A secure web application demonstrating authentication, role-based access control
 - **python-dotenv** – environment variable loading
 
 ---
+## GitHub Repository
+
+Project Source Code:  
+https://github.com/enajeromicheal/secure-healthcare-app
 
 ## Features
 - User registration (MongoDB)

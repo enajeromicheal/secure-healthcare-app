@@ -1,24 +1,38 @@
-<!-- dashboard.html — authenticated user landing page
-     - Displays the logged-in username and role
-     - Shows admin-only navigation to patient records
--->
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="card">
+<div class="card">
     <h1>Dashboard</h1>
 
-    <!-- Personalised greeting -->
     <p>Welcome, <strong>{{ username }}</strong>.</p>
-
-    <!-- Role displayed for transparency -->
     <p class="muted">Role: <strong>{{ role }}</strong></p>
 
-    <!-- Admin-only call-to-action -->
     {% if role == "admin" %}
-      <div class="actions mt-14">
-        <a class="btn" href="{{ url_for('patients') }}">View patient records</a>
-      </div>
+    <div class="card mt-14">
+        <h2>Admin Overview</h2>
+        <p><strong>Total Patients:</strong> {{ stats["total_patients"] }}</p>
+        <p><strong>Total Appointments:</strong> {{ stats["total_appointments"] }}</p>
+        <p><strong>Active Prescriptions:</strong> {{ stats["active_prescriptions"] }}</p>
+    </div>
+
+    <div class="actions mt-14">
+        <a class="btn" href="{{ url_for('patients') }}">View Patient Records</a>
+        <a class="btn btn--ghost" href="{{ url_for('admin_create_patient') }}">Create Patient</a>
+    </div>
     {% endif %}
-  </div>
+
+    {% if role == "patient" %}
+    <div class="actions mt-14">
+        <a class="btn" href="{{ url_for('my_record') }}">View My Record</a>
+        <a class="btn btn--ghost" href="{{ url_for('book_appointment') }}">Book Appointment</a>
+    </div>
+    {% endif %}
+
+    {% if role == "clinician" %}
+    <div class="actions mt-14">
+        <a class="btn" href="{{ url_for('patients') }}">View Patient Records</a>
+        <a class="btn btn--ghost" href="{{ url_for('create_prescription') }}">Create Prescription</a>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

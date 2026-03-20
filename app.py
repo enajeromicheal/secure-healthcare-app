@@ -176,6 +176,19 @@ def ensure_sqlite_schema():
     conn.commit()
     conn.close()
 
+# ⭐ Password strength validator (Security improvement)
+def is_strong_password(password: str) -> bool:
+    if len(password) < 10:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"\d", password):
+        return False
+    if not re.search(r"[!@#$%^&*()_\-+=\[{\]};:'\",<.>/?\\|`~]", password):
+        return False
+    return True
 
 # Ensure DB schema and Mongo indexes at startup (idempotent)
 ensure_sqlite_schema()
@@ -273,7 +286,12 @@ def register():
         if not username or not password:
             flash("Username and password are required.", "error")
             return redirect(url_for("register"))
-
+        if not is_strong_password(password):
+            flash(
+                "Password must be at least 10 characters and include uppercase, lowercase, a number, and a special character.",
+                "error",
+             )
+            return redirect(url_for("register"))
         # Hash password securely
         password_hash = generate_password_hash(
             password, method="pbkdf2:sha256", salt_length=16
@@ -351,23 +369,53 @@ def logout():
     flash("You have been logged out.", "success")
     return redirect(url_for("home"))
 
-
+@app.context_processor
+def inject_dashboard_stats():
+    return {
+        "stats": {
+            "total_patients": 0,
+            "total_appointments": 0,
+            "active_prescriptions": 0,
+        }
+    }
 # -------------------------
 # Routes: authenticated
 # -------------------------
 @app.route("/dashboard")
 def dashboard():
-    # # Dashboard for logged-in users
     gate = require_login()
     if gate:
         return gate
+
+    stats = {
+        "total_patients": 0,
+        "total_appointments": 0,
+        "active_prescriptions": 0,
+    }
+
+    if session.get("role") == "admin":
+        conn = get_db_connection()
+
+        stats["total_patients"] = conn.execute(
+            "SELECT COUNT(*) AS count FROM patient_records"
+        ).fetchone()["count"]
+
+        stats["total_appointments"] = conn.execute(
+            "SELECT COUNT(*) AS count FROM appointments"
+        ).fetchone()["count"]
+
+        stats["active_prescriptions"] = conn.execute(
+            "SELECT COUNT(*) AS count FROM prescriptions WHERE status = 'active'"
+        ).fetchone()["count"]
+
+        conn.close()
 
     return render_template(
         "dashboard.html",
         username=session["username"],
         role=session["role"],
+        stats=stats,
     )
-
 
 @app.route("/my-record")
 def my_record():
@@ -419,8 +467,11 @@ def change_password():
             flash("Current password is incorrect.", "error")
             return redirect(url_for("change_password"))
 
-        if len(new_password) < 10:
-            flash("New password must be at least 10 characters long.", "error")
+        if not is_strong_password(new_password):
+            flash(
+                "New password must be at least 10 characters and include uppercase, lowercase, a number, and a special character.",
+                "error",
+            )
             return redirect(url_for("change_password"))
 
         new_hash = generate_password_hash(
@@ -996,6 +1047,15 @@ def deactivate_patient_user(username):
         flash("Failed to deactivate patient account.", "error")
 
     return redirect(url_for("patients"))
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template("500.html"), 500
 # -------------------------
 # Dev server entry-point
 # -------------------------
